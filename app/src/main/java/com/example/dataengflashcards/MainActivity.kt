@@ -1,5 +1,6 @@
 package com.example.dataengflashcards
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -28,13 +29,36 @@ class MainActivity : AppCompatActivity() {
         categoriesRecyclerView = findViewById(R.id.categoriesRecyclerView)
         categoriesRecyclerView.layoutManager = LinearLayoutManager(this)
 
-        categoriesAdapter = CategoriesAdapter { category ->
-            val intent = Intent(this, FlashcardActivity::class.java)
-            intent.putExtra("CATEGORY_NAME", category.categoryName)
-            startActivity(intent)
-        }
+        categoriesAdapter = CategoriesAdapter(
+            onCategoryClick = { category ->
+                val intent = Intent(this, FlashcardActivity::class.java)
+                intent.putExtra("CATEGORY_NAME", category.categoryName)
+                startActivity(intent)
+            },
+            onResetClick = { category ->
+                showResetConfirmationDialog(category)
+            }
+        )
 
         categoriesRecyclerView.adapter = categoriesAdapter
+    }
+
+    private fun showResetConfirmationDialog(category: CategoryProgress) {
+        val builder = androidx.appcompat.app.AlertDialog.Builder(this)
+        builder.setTitle("Reset Progress")
+        builder.setMessage("Are you sure you want to reset all progress for \"${category.categoryName}\"? This will mark all words as \"learning\" again.")
+
+        builder.setPositiveButton("Reset") { _, _ ->
+            dbHelper.resetCategoryProgress(category.categoryName)
+            loadCategories()
+            Toast.makeText(this, "Progress reset for ${category.categoryName}", Toast.LENGTH_SHORT).show()
+        }
+
+        builder.setNegativeButton("Cancel") { dialog, _ ->
+            dialog.dismiss()
+        }
+
+        builder.create().show()
     }
 
     private fun loadCategories() {
@@ -48,8 +72,10 @@ class MainActivity : AppCompatActivity() {
     }
 }
 
-class CategoriesAdapter(private val onCategoryClick: (CategoryProgress) -> Unit) :
-    RecyclerView.Adapter<CategoriesAdapter.CategoryViewHolder>() {
+class CategoriesAdapter(
+    private val onCategoryClick: (CategoryProgress) -> Unit,
+    private val onResetClick: (CategoryProgress) -> Unit
+) : RecyclerView.Adapter<CategoriesAdapter.CategoryViewHolder>() {
 
     private var categories = listOf<CategoryProgress>()
 
@@ -75,14 +101,19 @@ class CategoriesAdapter(private val onCategoryClick: (CategoryProgress) -> Unit)
         private val masteredProgress: TextView = itemView.findViewById(R.id.masteredProgress)
         private val masteredProgressBar: ProgressBar = itemView.findViewById(R.id.masteredProgressBar)
         private val practiceButton: Button = itemView.findViewById(R.id.practiceButton)
+        private val resetButton: Button = itemView.findViewById(R.id.resetButton)
 
         fun bind(category: CategoryProgress) {
             categoryTitle.text = category.categoryName
-            masteredProgress.text = "${category.masteredWords} of ${category.totalWords} dataeng quests mastered"
+            masteredProgress.text = "${category.masteredWords} of ${category.totalWords} words mastered"
             masteredProgressBar.progress = category.masteredPercentage.toInt()
 
             practiceButton.setOnClickListener {
                 onCategoryClick(category)
+            }
+
+            resetButton.setOnClickListener {
+                onResetClick(category)
             }
 
             itemView.setOnClickListener {
@@ -162,13 +193,40 @@ class FlashcardActivity : AppCompatActivity() {
     }
 
     private fun loadQuestions() {
-        val categoryName = intent.getStringExtra("CATEGORY_NAME") ?: return
+        val categoryName = intent.getStringExtra("CATEGORY_NAME")
+        if (categoryName == null) {
+            Toast.makeText(this, "Error: Category not specified.", Toast.LENGTH_LONG).show()
+            finish() // Safely exit if no category name
+            return
+        }
         categoryTitle.text = categoryName
-        questions = dbHelper.getQuestionsByCategory(categoryName)
 
+        val allQuestions = dbHelper.getAllQuestionsByCategory(categoryName)
+        val learningQuestions = allQuestions.filter { it.isLearning }
+        val reviewingQuestions = allQuestions.filter { it.isReviewing }
+
+        // Assign 'questions' FIRST, then handle empty cases
+        questions = if (learningQuestions.isNotEmpty()) {
+            learningQuestions
+        } else if (reviewingQuestions.isNotEmpty()) {
+            reviewingQuestions
+        } else {
+            // If no learning or reviewing questions, set it to an empty list
+            // This ensures 'questions' is ALWAYS initialized
+            emptyList()
+        }
+
+        // Now handle the empty case for the initialized 'questions' list
         if (questions.isEmpty()) {
-            Toast.makeText(this, "No questions available for this category", Toast.LENGTH_SHORT).show()
-            finish()
+            if (allQuestions.isNotEmpty() && learningQuestions.isEmpty() && reviewingQuestions.isEmpty()) {
+                // This means all questions are mastered
+                Toast.makeText(this, "All questions in this category are mastered! Use the reset button to practice again.", Toast.LENGTH_LONG).show()
+            } else {
+                // This means there are genuinely no questions or an unexpected state
+                Toast.makeText(this, "No questions available for practice in this category.", Toast.LENGTH_SHORT).show()
+            }
+            finish() // Close the activity
+            return // Stop further execution
         }
     }
 
@@ -192,14 +250,15 @@ class FlashcardActivity : AppCompatActivity() {
         updateProgressBars()
     }
 
+    @SuppressLint("SetTextI18n")
     private fun updateProgressBars() {
         val categories = dbHelper.getAllCategories()
         val currentCategory = categories.find { it.categoryName == categoryTitle.text.toString() }
 
         currentCategory?.let { category ->
-            masteredProgress.text = "You have mastered ${category.masteredWords} out of ${category.totalWords} quests"
-            reviewingProgress.text = "You are reviewing ${category.reviewingWords} out of ${category.totalWords} quests"
-            learningProgress.text = "You are learning ${category.learningWords} out of ${category.totalWords} quests"
+            masteredProgress.text = "You have mastered ${category.masteredWords} out of ${category.totalWords} words"
+            reviewingProgress.text = "You are reviewing ${category.reviewingWords} out of ${category.totalWords} words"
+            learningProgress.text = "You are learning ${category.learningWords} out of ${category.totalWords} words"
 
             masteredProgressBar.progress = category.masteredPercentage.toInt()
             reviewingProgressBar.progress = category.reviewingPercentage.toInt()

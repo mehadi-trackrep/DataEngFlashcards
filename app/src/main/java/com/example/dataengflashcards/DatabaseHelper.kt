@@ -183,4 +183,49 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
         db.update(TABLE_QUESTIONS, values, "$COLUMN_ID = ?", arrayOf(questionId.toString()))
     }
+
+    fun resetCategoryProgress(category: String) {
+        val db = writableDatabase
+        val values = ContentValues().apply {
+            put(COLUMN_IS_LEARNING, 1)
+            put(COLUMN_IS_REVIEWING, 0)
+            put(COLUMN_IS_MASTERED, 0)
+        }
+
+        db.update(TABLE_QUESTIONS, values, "$COLUMN_CATEGORY = ?", arrayOf(category))
+    }
+
+    fun getAllQuestionsByCategory(category: String): List<DataEngQuestion> {
+        val questions = mutableListOf<DataEngQuestion>()
+        val db = readableDatabase
+
+        val cursor = db.query(
+            TABLE_QUESTIONS,
+            null,
+            "$COLUMN_CATEGORY = ?",
+            arrayOf(category),
+            null, null, null
+        )
+
+        cursor.use {
+            while (it.moveToNext()) {
+                questions.add(
+                    DataEngQuestion(
+                        id = it.getInt(0),
+                        category = it.getString(1),
+                        difficulty = it.getString(2),
+                        term = it.getString(3),
+                        definition = it.getString(4),
+                        example = it.getString(5),
+                        isLearning = it.getInt(6) == 1,
+                        isReviewing = it.getInt(7) == 1,
+                        isMastered = it.getInt(8) == 1,
+                        createdAt = it.getLong(9)
+                    )
+                )
+            }
+        }
+
+        return questions
+    }
 }

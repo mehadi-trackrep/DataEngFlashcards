@@ -56,6 +56,18 @@
             android:textSize="14sp"
             android:textColor="#6B46C1"
             android:background="@drawable/practice_button_background"
+            android:textAllCaps="false"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Reset Button -->
+        <Button
+            android:id="@+id/resetButton"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:text="Reset Progress"
+            android:textSize="14sp"
+            android:textColor="#EF4444"
+            android:background="@drawable/reset_button_background"
             android:textAllCaps="false" />
 
     </LinearLayout>
