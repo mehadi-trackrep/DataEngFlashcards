@@ -1,0 +1,148 @@
+{
+  "data_engineering_questions": {
+    "question1": {
+      "question": "What is ETL?",
+      "answer": "Extract, Transform, Load - a process of extracting data from various sources, transforming it into a suitable format, and loading it into a data warehouse or database.",
+      "category": "Fundamentals",
+      "difficulty": "Beginner",
+      "correctCount": 0,
+      "incorrectCount": 0
+    },
+    "question2": {
+      "question": "What is a Data Pipeline?",
+      "answer": "A series of data processing steps where data is ingested from various sources, processed through transformations, and delivered to a destination system for analysis or storage.",
+      "category": "Architecture",
+      "difficulty": "Beginner",
+      "correctCount": 0,
+      "incorrectCount": 0
+    },
+    "question3": {
+      "question": "What is ACID in databases?",
+      "answer": "Atomicity, Consistency, Isolation, Durability - properties that guarantee database transactions are processed reliably even in the event of errors, power failures, etc.",
+      "category": "Databases",
+      "difficulty": "Intermediate",
+      "correctCount": 0,
+      "incorrectCount": 0
+    },
+    "question4": {
+      "question": "What is Apache Spark?",
+      "answer": "A unified analytics engine for large-scale data processing that provides high-level APIs and supports SQL queries, streaming data, and machine learning.",
+      "category": "Big Data",
+      "difficulty": "Intermediate",
+      "correctCount": 0,
+      "incorrectCount": 0
+    },
+    "question5": {
+      "question": "What is Data Partitioning?",
+      "answer": "The process of dividing a large dataset into smaller, more manageable pieces based on certain criteria (like date ranges or hash values) to improve query performance.",
+      "category": "Optimization",
+      "difficulty": "Intermediate",
+      "correctCount": 0,
+      "incorrectCount": 0
+    },
+    "question6": {
+      "question": "What is Apache Kafka?",
+      "answer": "A distributed streaming platform used for building real-time data pipelines and streaming applications. It can handle high-throughput, fault-tolerant data streams.",
+      "category": "Streaming",
+      "difficulty": "Intermediate",
+      "correctCount": 0,
+      "incorrectCount": 0
+    },
+    "question7": {
+      "question": "What is a Data Warehouse?",
+      "answer": "A centralized repository that stores integrated data from multiple sources, optimized for analytical queries and reporting rather than transactional processing.",
+      "category": "Architecture",
+      "difficulty": "Beginner",
+      "correctCount": 0,
+      "incorrectCount": 0
+    },
+    "question8": {
+      "question": "What is Data Modeling?",
+      "answer": "The process of creating a conceptual representation of data structures and their relationships to support business processes and analytical requirements.",
+      "category": "Design",
+      "difficulty": "Intermediate",
+      "correctCount": 0,
+      "incorrectCount": 0
+    },
+    "question9": {
+      "question": "What is Apache Airflow?",
+      "answer": "An open-source workflow orchestration platform used to programmatically author, schedule, and monitor data pipelines as Directed Acyclic Graphs (DAGs).",
+      "category": "Orchestration",
+      "difficulty": "Advanced",
+      "correctCount": 0,
+      "incorrectCount": 0
+    },
+    "question10": {
+      "question": "What is Column-oriented storage?",
+      "answer": "A database storage method where data is stored by columns rather than rows, optimizing for analytical queries that typically access specific columns across many rows.",
+      "category": "Storage",
+      "difficulty": "Advanced",
+      "correctCount": 0,
+      "incorrectCount": 0
+    },
+    "question11": {
+      "question": "What is Data Lineage?",
+      "answer": "The tracking of data's journey from its origin through various transformations to its final destination, providing visibility into data flow and dependencies.",
+      "category": "Governance",
+      "difficulty": "Intermediate",
+      "correctCount": 0,
+      "incorrectCount": 0
+    },
+    "question12": {
+      "question": "What is Apache Hive?",
+      "answer": "A data warehouse software that facilitates reading, writing, and managing large datasets in distributed storage using SQL-like queries (HiveQL).",
+      "category": "Big Data",
+      "difficulty": "Intermediate",
+      "correctCount": 0,
+      "incorrectCount": 0
+    },
+    "question13": {
+      "question": "What is Change Data Capture (CDC)?",
+      "answer": "A technique used to identify and track changes made to data in a database, enabling real-time data integration and synchronization between systems.",
+      "category": "Integration",
+      "difficulty": "Advanced",
+      "correctCount": 0,
+      "incorrectCount": 0
+    },
+    "question14": {
+      "question": "What is Data Schema?",
+      "answer": "A blueprint that defines the structure, organization, and constraints of data in a database, including tables, fields, relationships, and data types.",
+      "category": "Design",
+      "difficulty": "Beginner",
+      "correctCount": 0,
+      "incorrectCount": 0
+    },
+    "question15": {
+      "question": "What is Apache Hadoop?",
+      "answer": "An open-source framework for distributed storage and processing of large datasets across clusters of computers using simple programming models.",
+      "category": "Big Data",
+      "difficulty": "Intermediate",
+      "correctCount": 0,
+      "incorrectCount": 0
+    },
+    "question16": {
+      "question": "What is a Data Lake?",
+      "answer": "A centralized repository that allows you to store all your structured and unstructured data at any scale, without having to first structure the data.",
+      "category": "Architecture",
+      "difficulty": "Intermediate",
+      "correctCount": 0,
+      "incorrectCount": 0
+    },
+    "question17": {
+      "question": "What is Apache Flink?",
+      "answer": "A stream processing framework for distributed, high-performing, always-available, and accurate data streaming applications.",
+      "category": "Streaming",
+      "difficulty": "Advanced",
+      "correctCount": 0,
+      "incorrectCount": 0
+    },
+    "question18": {
+      "question": "What is Data Mesh?",
+      "answer": "A decentralized data architecture paradigm that treats data as a product, with domain-oriented ownership and federated governance.",
+      "category": "Architecture",
+      "difficulty": "Advanced",
+      "correctCount": 0,
+      "incorrectCount": 0
+    }
+  }
+}

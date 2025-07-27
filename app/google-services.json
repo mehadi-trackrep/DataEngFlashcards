@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "746228559377",
+    "firebase_url": "https://dataengflashcards-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "dataengflashcards",
+    "storage_bucket": "dataengflashcards.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:746228559377:android:aac1f2c7d2e1853ae14bb0",
+        "android_client_info": {
+          "package_name": "com.example.dataengflashcards"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyArT9SoRgPPc2KgVR2GOGztMvwX09QzZkQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
