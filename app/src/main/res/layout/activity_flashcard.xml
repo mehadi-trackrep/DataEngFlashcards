@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/flashcard_background">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="#6B46C1"
+        android:padding="16dp"
+        android:gravity="center_vertical">
+
+        <!-- Back Button -->
+        <ImageButton
+            android:id="@+id/backButton"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_back"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Back" />
+
+        <!-- Category Title -->
+        <TextView
+            android:id="@+id/categoryTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Common Words I"
+            android:textSize="18sp"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            android:gravity="center" />
+
+        <!-- Spacer -->
+        <View
+            android:layout_width="32dp"
+            android:layout_height="32dp" />
+
+    </LinearLayout>
+
+    <!-- Flashcard Content -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Flashcard -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp"
+            xmlns:app="http://schemas.android.com/apk/res-auto">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="24dp"
+                android:background="@android:color/white">
+
+                <!-- Status Tag -->
+                <TextView
+                    android:id="@+id/statusTag"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="LEARNING"
+                    android:textSize="10sp"
+                    android:textColor="@android:color/white"
+                    android:background="@drawable/learning_tag_background"
+                    android:padding="4dp"
+                    android:layout_gravity="end"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Term -->
+                <TextView
+                    android:id="@+id/termText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="anomalous"
+                    android:textSize="28sp"
+                    android:textColor="#1F2937"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Tap to see meaning button -->
+                <Button
+                    android:id="@+id/tapToSeeButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Tap to see meaning >"
+                    android:textSize="14sp"
+                    android:textColor="#6B7280"
+                    android:background="@drawable/tap_to_see_background"
+                    android:textAllCaps="false"
+                    android:padding="12dp" />
+
+                <!-- Definition (Initially Hidden) -->
+                <TextView
+                    android:id="@+id/definitionText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="adjective: not normal"
+                    android:textSize="14sp"
+                    android:textColor="#1F2937"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="12dp"
+                    android:visibility="gone" />
+
+                <!-- Example (Initially Hidden) -->
+                <TextView
+                    android:id="@+id/exampleText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="According to those who do not believe in climate change, the extreme weather over the last five years is simply anomalous—daily temperatures should return to their old averages, they believe."
+                    android:textSize="14sp"
+                    android:textColor="#374151"
+                    android:lineSpacingExtra="4dp"
+                    android:layout_marginBottom="16dp"
+                    android:visibility="gone" />
+
+                <!-- Answer Buttons (Initially Hidden) -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginTop="8dp">
+
+                    <Button
+                        android:id="@+id/knewItButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:text="✓ I knew this word"
+                        android:textSize="14sp"
+                        android:textColor="@android:color/white"
+                        android:background="@drawable/knew_it_button_background"
+                        android:textAllCaps="false"
+                        android:layout_marginBottom="8dp"
+                        android:visibility="gone" />
+
+                    <Button
+                        android:id="@+id/didntKnowButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:text="✗ I didn't know this word"
+                        android:textSize="14sp"
+                        android:textColor="@android:color/white"
+                        android:background="@drawable/didnt_know_button_background"
+                        android:textAllCaps="false"
+                        android:visibility="gone" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+    </LinearLayout>
+
+    <!-- Progress Section -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#6B46C1"
+        android:padding="16dp">
+
+        <!-- Mastered Progress -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:id="@+id/masteredProgress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="You have mastered 49 out of 51 words"
+                android:textSize="12sp"
+                android:textColor="@android:color/white"
+                android:layout_marginBottom="4dp" />
+
+            <ProgressBar
+                android:id="@+id/masteredProgressBar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="6dp"
+                android:progress="96"
+                android:progressDrawable="@drawable/progress_bar_green" />
+
+        </LinearLayout>
+
+        <!-- Reviewing Progress -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:id="@+id/reviewingProgress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="You are reviewing 1 out of 51 words"
+                android:textSize="12sp"
+                android:textColor="@android:color/white"
+                android:layout_marginBottom="4dp" />
+
+            <ProgressBar
+                android:id="@+id/reviewingProgressBar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="6dp"
+                android:progress="2"
+                android:progressDrawable="@drawable/progress_bar_orange" />
+
+        </LinearLayout>
+
+        <!-- Learning Progress -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/learningProgress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="You are learning 1 out of 51 words"
+                android:textSize="12sp"
+                android:textColor="@android:color/white"
+                android:layout_marginBottom="4dp" />
+
+            <ProgressBar
+                android:id="@+id/learningProgressBar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="6dp"
+                android:progress="2"
+                android:progressDrawable="@drawable/progress_bar_red" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

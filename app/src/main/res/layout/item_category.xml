@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    android:foreground="?attr/selectableItemBackground"
+    android:clickable="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="@android:color/white">
+
+        <!-- Category Title -->
+        <TextView
+            android:id="@+id/categoryTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Common Words I"
+            android:textSize="18sp"
+            android:textColor="#1F2937"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Progress Text -->
+        <TextView
+            android:id="@+id/masteredProgress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="31 of 51 words mastered"
+            android:textSize="12sp"
+            android:textColor="#6B7280"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Progress Bar -->
+        <ProgressBar
+            android:id="@+id/masteredProgressBar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="8dp"
+            android:progress="60"
+            android:progressDrawable="@drawable/progress_bar_green"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Practice Button -->
+        <Button
+            android:id="@+id/practiceButton"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:text="Practice this deck >"
+            android:textSize="14sp"
+            android:textColor="#6B46C1"
+            android:background="@drawable/practice_button_background"
+            android:textAllCaps="false" />
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

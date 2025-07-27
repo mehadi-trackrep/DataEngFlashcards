@@ -1,359 +1,241 @@
 package com.example.dataengflashcards
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.Button
-import android.widget.ProgressBar
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import com.google.firebase.database.*
-import kotlin.random.Random
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 
 class MainActivity : AppCompatActivity() {
+
     private lateinit var dbHelper: DatabaseHelper
-    private lateinit var firebaseDatabase: DatabaseReference
-
-    private lateinit var questionText: TextView
-    private lateinit var answerText: TextView
-    private lateinit var showAnswerBtn: Button
-    private lateinit var nextBtn: Button
-    private lateinit var correctBtn: Button
-    private lateinit var incorrectBtn: Button
-    private lateinit var progressText: TextView
-    private lateinit var loadingProgressBar: ProgressBar
-
-    private var currentQuestion: DataEngQuestion? = null
-    private var questionsList = mutableListOf<DataEngQuestion>()
-    private var remainingQuestions = mutableListOf<DataEngQuestion>()
-    private var isAnswerVisible = false
-    private var currentIndex = 0
-    private var correctAnswers = 0
-    private var totalQuestions = 0
+    private lateinit var categoriesRecyclerView: RecyclerView
+    private lateinit var categoriesAdapter: CategoriesAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        initViews()
-        initFirebase()
         dbHelper = DatabaseHelper(this)
 
-        loadQuestionsFromFirebase()
+        setupViews()
+        loadCategories()
     }
 
-    private fun initViews() {
-        questionText = findViewById(R.id.questionText)
-        answerText = findViewById(R.id.answerText)
-        showAnswerBtn = findViewById(R.id.showAnswerBtn)
-        nextBtn = findViewById(R.id.nextBtn)
-        correctBtn = findViewById(R.id.correctBtn)
-        incorrectBtn = findViewById(R.id.incorrectBtn)
-        progressText = findViewById(R.id.progressText)
-        loadingProgressBar = findViewById(R.id.loadingProgressBar)
+    private fun setupViews() {
+        categoriesRecyclerView = findViewById(R.id.categoriesRecyclerView)
+        categoriesRecyclerView.layoutManager = LinearLayoutManager(this)
 
-        showAnswerBtn.setOnClickListener { showAnswer() }
-        nextBtn.setOnClickListener { loadNextQuestion() }
-        correctBtn.setOnClickListener { markAnswer(true) }
-        incorrectBtn.setOnClickListener { markAnswer(false) }
-    }
-
-    private fun initFirebase() {
-        firebaseDatabase = FirebaseDatabase.getInstance().getReference("data_engineering_questions")
-    }
-
-    private fun loadQuestionsFromFirebase() {
-        showLoading(true)
-
-        firebaseDatabase.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                questionsList.clear()
-
-                for (snapshot in dataSnapshot.children) {
-                    val question = snapshot.getValue(DataEngQuestion::class.java)
-                    question?.let {
-                        it.firebaseId = snapshot.key
-                        questionsList.add(it)
-                    }
-                }
-
-                showLoading(false)
-
-                if (questionsList.isEmpty()) {
-                    createSampleDataInFirebase()
-                } else {
-                    dbHelper.saveQuestionsFromFirebase(questionsList)
-                    initializeSession()
-                }
-            }
-
-            override fun onCancelled(databaseError: DatabaseError) {
-                showLoading(false)
-                Toast.makeText(this@MainActivity, "Failed to load questions: ${databaseError.message}", Toast.LENGTH_LONG).show()
-
-                // Fallback to local database
-                questionsList = dbHelper.getAllQuestions().toMutableList()
-                if (questionsList.isNotEmpty()) {
-                    initializeSession()
-                }
-            }
-        })
-    }
-
-    private fun createSampleDataInFirebase() {
-        val sampleQuestions = getSampleQuestions()
-
-        sampleQuestions.forEach { question ->
-            val key = firebaseDatabase.push().key
-            key?.let {
-                firebaseDatabase.child(it).setValue(question)
-            }
+        categoriesAdapter = CategoriesAdapter { category ->
+            val intent = Intent(this, FlashcardActivity::class.java)
+            intent.putExtra("CATEGORY_NAME", category.categoryName)
+            startActivity(intent)
         }
 
-        questionsList = sampleQuestions.toMutableList()
-        dbHelper.saveQuestionsFromFirebase(questionsList)
-        initializeSession()
-
-        Toast.makeText(this, "Sample questions created in Firebase", Toast.LENGTH_SHORT).show()
+        categoriesRecyclerView.adapter = categoriesAdapter
     }
 
-    private fun getSampleQuestions(): List<DataEngQuestion> {
-        return listOf(
-            DataEngQuestion(
-                question = "What is ETL?",
-                answer = "Extract, Transform, Load - a process of extracting data from various sources, transforming it into a suitable format, and loading it into a data warehouse or database.",
-                category = "Fundamentals",
-                difficulty = "Beginner"
-            ),
-            DataEngQuestion(
-                question = "What is a Data Pipeline?",
-                answer = "A series of data processing steps where data is ingested from various sources, processed through transformations, and delivered to a destination system for analysis or storage.",
-                category = "Architecture",
-                difficulty = "Beginner"
-            ),
-            DataEngQuestion(
-                question = "What is ACID in databases?",
-                answer = "Atomicity, Consistency, Isolation, Durability - properties that guarantee database transactions are processed reliably even in the event of errors, power failures, etc.",
-                category = "Databases",
-                difficulty = "Intermediate"
-            ),
-            DataEngQuestion(
-                question = "What is Apache Spark?",
-                answer = "A unified analytics engine for large-scale data processing that provides high-level APIs and supports SQL queries, streaming data, and machine learning.",
-                category = "Big Data",
-                difficulty = "Intermediate"
-            ),
-            DataEngQuestion(
-                question = "What is Data Partitioning?",
-                answer = "The process of dividing a large dataset into smaller, more manageable pieces based on certain criteria (like date ranges or hash values) to improve query performance.",
-                category = "Optimization",
-                difficulty = "Intermediate"
-            ),
-            DataEngQuestion(
-                question = "What is Apache Kafka?",
-                answer = "A distributed streaming platform used for building real-time data pipelines and streaming applications. It can handle high-throughput, fault-tolerant data streams.",
-                category = "Streaming",
-                difficulty = "Intermediate"
-            ),
-            DataEngQuestion(
-                question = "What is a Data Warehouse?",
-                answer = "A centralized repository that stores integrated data from multiple sources, optimized for analytical queries and reporting rather than transactional processing.",
-                category = "Architecture",
-                difficulty = "Beginner"
-            ),
-            DataEngQuestion(
-                question = "What is Data Modeling?",
-                answer = "The process of creating a conceptual representation of data structures and their relationships to support business processes and analytical requirements.",
-                category = "Design",
-                difficulty = "Intermediate"
-            ),
-            DataEngQuestion(
-                question = "What is Apache Airflow?",
-                answer = "An open-source workflow orchestration platform used to programmatically author, schedule, and monitor data pipelines as Directed Acyclic Graphs (DAGs).",
-                category = "Orchestration",
-                difficulty = "Advanced"
-            ),
-            DataEngQuestion(
-                question = "What is Column-oriented storage?",
-                answer = "A database storage method where data is stored by columns rather than rows, optimizing for analytical queries that typically access specific columns across many rows.",
-                category = "Storage",
-                difficulty = "Advanced"
-            ),
-            DataEngQuestion(
-                question = "What is Data Lineage?",
-                answer = "The tracking of data's journey from its origin through various transformations to its final destination, providing visibility into data flow and dependencies.",
-                category = "Governance",
-                difficulty = "Intermediate"
-            ),
-            DataEngQuestion(
-                question = "What is Apache Hive?",
-                answer = "A data warehouse software that facilitates reading, writing, and managing large datasets in distributed storage using SQL-like queries (HiveQL).",
-                category = "Big Data",
-                difficulty = "Intermediate"
-            ),
-            DataEngQuestion(
-                question = "What is Change Data Capture (CDC)?",
-                answer = "A technique used to identify and track changes made to data in a database, enabling real-time data integration and synchronization between systems.",
-                category = "Integration",
-                difficulty = "Advanced"
-            ),
-            DataEngQuestion(
-                question = "What is Data Schema?",
-                answer = "A blueprint that defines the structure, organization, and constraints of data in a database, including tables, fields, relationships, and data types.",
-                category = "Design",
-                difficulty = "Beginner"
-            ),
-            DataEngQuestion(
-                question = "What is Apache Hadoop?",
-                answer = "An open-source framework for distributed storage and processing of large datasets across clusters of computers using simple programming models.",
-                category = "Big Data",
-                difficulty = "Intermediate"
-            ),
-            DataEngQuestion(
-                question = "What is a Data Lake?",
-                answer = "A centralized repository that allows you to store all your structured and unstructured data at any scale, without having to first structure the data.",
-                category = "Architecture",
-                difficulty = "Intermediate"
-            ),
-            DataEngQuestion(
-                question = "What is Apache Flink?",
-                answer = "A stream processing framework for distributed, high-performing, always-available, and accurate data streaming applications.",
-                category = "Streaming",
-                difficulty = "Advanced"
-            ),
-            DataEngQuestion(
-                question = "What is Data Mesh?",
-                answer = "A decentralized data architecture paradigm that treats data as a product, with domain-oriented ownership and federated governance.",
-                category = "Architecture",
-                difficulty = "Advanced"
-            )
-        )
+    private fun loadCategories() {
+        val categories = dbHelper.getAllCategories()
+        categoriesAdapter.updateCategories(categories)
     }
 
-    private fun initializeSession() {
-        remainingQuestions = questionsList.toMutableList()
-        totalQuestions = questionsList.size
-        currentIndex = 0
-        correctAnswers = 0
-        loadNextQuestion()
+    override fun onResume() {
+        super.onResume()
+        loadCategories() // Refresh data when returning from flashcard activity
+    }
+}
+
+class CategoriesAdapter(private val onCategoryClick: (CategoryProgress) -> Unit) :
+    RecyclerView.Adapter<CategoriesAdapter.CategoryViewHolder>() {
+
+    private var categories = listOf<CategoryProgress>()
+
+    fun updateCategories(newCategories: List<CategoryProgress>) {
+        categories = newCategories
+        notifyDataSetChanged()
     }
 
-    private fun loadNextQuestion() {
-        if (remainingQuestions.isEmpty()) {
-            showCompletionDialog()
+    override fun onCreateViewHolder(parent: android.view.ViewGroup, viewType: Int): CategoryViewHolder {
+        val view = android.view.LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_category, parent, false)
+        return CategoryViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: CategoryViewHolder, position: Int) {
+        holder.bind(categories[position])
+    }
+
+    override fun getItemCount() = categories.size
+
+    inner class CategoryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val categoryTitle: TextView = itemView.findViewById(R.id.categoryTitle)
+        private val masteredProgress: TextView = itemView.findViewById(R.id.masteredProgress)
+        private val masteredProgressBar: ProgressBar = itemView.findViewById(R.id.masteredProgressBar)
+        private val practiceButton: Button = itemView.findViewById(R.id.practiceButton)
+
+        fun bind(category: CategoryProgress) {
+            categoryTitle.text = category.categoryName
+            masteredProgress.text = "${category.masteredWords} of ${category.totalWords} dataeng quests mastered"
+            masteredProgressBar.progress = category.masteredPercentage.toInt()
+
+            practiceButton.setOnClickListener {
+                onCategoryClick(category)
+            }
+
+            itemView.setOnClickListener {
+                onCategoryClick(category)
+            }
+        }
+    }
+}
+
+class FlashcardActivity : AppCompatActivity() {
+
+    private lateinit var dbHelper: DatabaseHelper
+    private lateinit var questions: List<DataEngQuestion>
+    private var currentQuestionIndex = 0
+
+    private lateinit var categoryTitle: TextView
+    private lateinit var termText: TextView
+    private lateinit var definitionText: TextView
+    private lateinit var exampleText: TextView
+    private lateinit var tapToSeeButton: Button
+    private lateinit var knewItButton: Button
+    private lateinit var didntKnowButton: Button
+    private lateinit var backButton: ImageButton
+    private lateinit var statusTag: TextView
+    private lateinit var masteredProgress: TextView
+    private lateinit var reviewingProgress: TextView
+    private lateinit var learningProgress: TextView
+    private lateinit var masteredProgressBar: ProgressBar
+    private lateinit var reviewingProgressBar: ProgressBar
+    private lateinit var learningProgressBar: ProgressBar
+
+    private var isDefinitionVisible = false
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_flashcard)
+
+        dbHelper = DatabaseHelper(this)
+
+        setupViews()
+        loadQuestions()
+        displayCurrentQuestion()
+    }
+
+    private fun setupViews() {
+        categoryTitle = findViewById(R.id.categoryTitle)
+        termText = findViewById(R.id.termText)
+        definitionText = findViewById(R.id.definitionText)
+        exampleText = findViewById(R.id.exampleText)
+        tapToSeeButton = findViewById(R.id.tapToSeeButton)
+        knewItButton = findViewById(R.id.knewItButton)
+        didntKnowButton = findViewById(R.id.didntKnowButton)
+        backButton = findViewById(R.id.backButton)
+        statusTag = findViewById(R.id.statusTag)
+        masteredProgress = findViewById(R.id.masteredProgress)
+        reviewingProgress = findViewById(R.id.reviewingProgress)
+        learningProgress = findViewById(R.id.learningProgress)
+        masteredProgressBar = findViewById(R.id.masteredProgressBar)
+        reviewingProgressBar = findViewById(R.id.reviewingProgressBar)
+        learningProgressBar = findViewById(R.id.learningProgressBar)
+
+        tapToSeeButton.setOnClickListener {
+            showDefinition()
+        }
+
+        knewItButton.setOnClickListener {
+            handleAnswer(true)
+        }
+
+        didntKnowButton.setOnClickListener {
+            handleAnswer(false)
+        }
+
+        backButton.setOnClickListener {
+            finish()
+        }
+    }
+
+    private fun loadQuestions() {
+        val categoryName = intent.getStringExtra("CATEGORY_NAME") ?: return
+        categoryTitle.text = categoryName
+        questions = dbHelper.getQuestionsByCategory(categoryName)
+
+        if (questions.isEmpty()) {
+            Toast.makeText(this, "No questions available for this category", Toast.LENGTH_SHORT).show()
+            finish()
+        }
+    }
+
+    private fun displayCurrentQuestion() {
+        if (currentQuestionIndex >= questions.size) {
+            Toast.makeText(this, "You've completed all questions in this category!", Toast.LENGTH_LONG).show()
+            finish()
             return
         }
 
-        val randomIndex = Random.nextInt(remainingQuestions.size)
-        currentQuestion = remainingQuestions[randomIndex]
-        remainingQuestions.removeAt(randomIndex)
-        currentIndex++
+        val question = questions[currentQuestionIndex]
 
-        questionText.text = currentQuestion?.question
-        answerText.text = currentQuestion?.answer
-        answerText.visibility = View.GONE
-        isAnswerVisible = false
+        termText.text = question.term
+        definitionText.text = question.definition
+        exampleText.text = question.example
 
-        showAnswerBtn.visibility = View.VISIBLE
-        correctBtn.visibility = View.GONE
-        incorrectBtn.visibility = View.GONE
-        nextBtn.visibility = View.GONE
+        statusTag.text = "LEARNING"
+        statusTag.setBackgroundResource(R.drawable.learning_tag_background)
 
-        updateProgress()
+        hideDefinition()
+        updateProgressBars()
     }
 
-    private fun showCompletionDialog() {
-        val percentage = if (totalQuestions > 0) (correctAnswers * 100) / totalQuestions else 0
+    private fun updateProgressBars() {
+        val categories = dbHelper.getAllCategories()
+        val currentCategory = categories.find { it.categoryName == categoryTitle.text.toString() }
 
-        val dialogBuilder = androidx.appcompat.app.AlertDialog.Builder(this)
-        dialogBuilder.setTitle("🎉 Session Complete!")
-        dialogBuilder.setMessage(
-            "Great job! Here are your results:\n\n" +
-                    "📊 Questions Answered: $totalQuestions\n" +
-                    "✅ Correct Answers: $correctAnswers\n" +
-                    "❌ Incorrect Answers: ${totalQuestions - correctAnswers}\n" +
-                    "📈 Success Rate: $percentage%\n\n" +
-                    getPerformanceFeedback(percentage)
-        )
-        dialogBuilder.setPositiveButton("Start New Session") { _, _ ->
-            initializeSession()
+        currentCategory?.let { category ->
+            masteredProgress.text = "You have mastered ${category.masteredWords} out of ${category.totalWords} quests"
+            reviewingProgress.text = "You are reviewing ${category.reviewingWords} out of ${category.totalWords} quests"
+            learningProgress.text = "You are learning ${category.learningWords} out of ${category.totalWords} quests"
+
+            masteredProgressBar.progress = category.masteredPercentage.toInt()
+            reviewingProgressBar.progress = category.reviewingPercentage.toInt()
+            learningProgressBar.progress = category.learningPercentage.toInt()
         }
-        dialogBuilder.setNegativeButton("Exit") { _, _ ->
+    }
+
+    private fun showDefinition() {
+        isDefinitionVisible = true
+        definitionText.visibility = View.VISIBLE
+        exampleText.visibility = View.VISIBLE
+        tapToSeeButton.visibility = View.GONE
+        knewItButton.visibility = View.VISIBLE
+        didntKnowButton.visibility = View.VISIBLE
+    }
+
+    private fun hideDefinition() {
+        isDefinitionVisible = false
+        definitionText.visibility = View.GONE
+        exampleText.visibility = View.GONE
+        tapToSeeButton.visibility = View.VISIBLE
+        knewItButton.visibility = View.GONE
+        didntKnowButton.visibility = View.GONE
+    }
+
+    private fun handleAnswer(knew: Boolean) {
+        val question = questions[currentQuestionIndex]
+        dbHelper.updateQuestionStatus(question.id, knew)
+
+        currentQuestionIndex++
+
+        if (currentQuestionIndex < questions.size) {
+            displayCurrentQuestion()
+        } else {
+            Toast.makeText(this, "Great job! You've completed this session.", Toast.LENGTH_LONG).show()
             finish()
-        }
-        dialogBuilder.setCancelable(false)
-        dialogBuilder.show()
-    }
-
-    private fun getPerformanceFeedback(percentage: Int): String {
-        return when {
-            percentage >= 90 -> "🌟 Outstanding! You're a Data Engineering expert!"
-            percentage >= 80 -> "🔥 Excellent work! You have strong knowledge!"
-            percentage >= 70 -> "👍 Good job! You're on the right track!"
-            percentage >= 60 -> "📚 Not bad! Keep studying to improve!"
-            else -> "💪 Keep practicing! You'll get better with time!"
-        }
-    }
-
-    private fun showAnswer() {
-        answerText.visibility = View.VISIBLE
-        showAnswerBtn.visibility = View.GONE
-        correctBtn.visibility = View.VISIBLE
-        incorrectBtn.visibility = View.VISIBLE
-        isAnswerVisible = true
-    }
-
-    private fun markAnswer(isCorrect: Boolean) {
-        currentQuestion?.let { question ->
-            // Update local database
-            dbHelper.updateQuestionStats(question.id, isCorrect)
-
-            // Update Firebase
-            updateFirebaseStats(isCorrect)
-
-            // Update session stats
-            if (isCorrect) {
-                correctAnswers++
-                Toast.makeText(this, "Correct! 🎉", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(this, "Keep practicing! 💪", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        correctBtn.visibility = View.GONE
-        incorrectBtn.visibility = View.GONE
-        nextBtn.visibility = View.VISIBLE
-    }
-
-    private fun updateFirebaseStats(isCorrect: Boolean) {
-        currentQuestion?.let { question ->
-            question.firebaseId?.let { firebaseId ->
-                val questionRef = firebaseDatabase.child(firebaseId)
-
-                if (isCorrect) {
-                    questionRef.child("correctCount").setValue(question.correctCount + 1)
-                    question.correctCount++
-                } else {
-                    questionRef.child("incorrectCount").setValue(question.incorrectCount + 1)
-                    question.incorrectCount++
-                }
-            }
-        }
-    }
-
-    private fun updateProgress() {
-        progressText.text = "Question $currentIndex of $totalQuestions"
-    }
-
-    private fun showLoading(show: Boolean) {
-        loadingProgressBar.visibility = if (show) View.VISIBLE else View.GONE
-        if (show) {
-            questionText.text = "Loading questions from Firebase..."
-            answerText.visibility = View.GONE
-            showAnswerBtn.visibility = View.GONE
-            correctBtn.visibility = View.GONE
-            incorrectBtn.visibility = View.GONE
-            nextBtn.visibility = View.GONE
         }
     }
 }
